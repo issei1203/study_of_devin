@@ -16,10 +16,6 @@ const dbConfig = {
   port: 5432,
 };
 
-app.get('/', (req, res) => {
-  res.send('Hello world');
-});
-
 app.get('/login', (req, res) => {
   const loginHtml = `
 <!DOCTYPE html>
