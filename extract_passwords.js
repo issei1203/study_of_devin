@@ -29,16 +29,24 @@ async function extractPasswords() {
     const user78Hash = user78Result.rows[0]?.password_hash;
     const user78Password = 'Fnoa734r-wefd';
     
-    if (user78Hash) {
-      console.log(`${user78Password},${user78Hash}`);
+    const totalEntries = 100;
+    const user78Position = Math.floor(Math.random() * totalEntries);
+    
+    const allEntries = [];
+    
+    for (let i = 0; i < totalEntries; i++) {
+      if (i === user78Position && user78Hash) {
+        allEntries.push(`${user78Password},${user78Hash}`);
+      } else {
+        const randomPassword = generateRandomPassword();
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(randomPassword, saltRounds);
+        allEntries.push(`${randomPassword},${hashedPassword}`);
+      }
     }
     
-    const numRandomEntries = 20; // Generate 20 random entries
-    for (let i = 0; i < numRandomEntries; i++) {
-      const randomPassword = generateRandomPassword();
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(randomPassword, saltRounds);
-      console.log(`${randomPassword},${hashedPassword}`);
+    for (const entry of allEntries) {
+      console.log(entry);
     }
     
   } catch (error) {
