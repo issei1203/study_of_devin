@@ -233,7 +233,6 @@ app.post('/vulnerable-login', async (req, res) => {
         <div class="debug-info">
             実行されたSQL: ${vulnerableQuery}
         </div>
-        <p>SQLインジェクションを試してみてください。例: <code>' OR '1'='1' --</code></p>
         <a href="/vulnerable-login">戻る</a>
     </div>
 </body>
