@@ -241,8 +241,121 @@ app.post('/vulnerable-login', async (req, res) => {
       `);
     }
 
-    const user = result.rows[0];
-    res.send(`
+    if (result.rows.length > 1) {
+      const userTableRows = result.rows.map(user => 
+        `<tr>
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td style="font-family: monospace; font-size: 12px; word-break: break-all;">${user.password_hash}</td>
+        </tr>`
+      ).join('');
+      
+      res.send(`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLインジェクション成功 - 全ユーザー情報</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .success-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #dc3545;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .users-table th, .users-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .users-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .users-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .stats {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success">🚨 SQLインジェクション攻撃成功 🚨</div>
+        <div class="warning">
+            ⚠️ 脆弱性により全ユーザー情報が漏洩しました
+        </div>
+        <div class="stats">
+            取得されたユーザー数: ${result.rows.length}件
+        </div>
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ユーザー名</th>
+                    <th>パスワードハッシュ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${userTableRows}
+            </tbody>
+        </table>
+        <div class="back-link">
+            <a href="/vulnerable-login">再度ログイン</a>
+        </div>
+    </div>
+</body>
+</html>
+      `);
+    } else {
+      const user = result.rows[0];
+      res.send(`
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -299,7 +412,8 @@ app.post('/vulnerable-login', async (req, res) => {
     </div>
 </body>
 </html>
-    `);
+      `);
+    }
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).send(`
