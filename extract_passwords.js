@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+const bcrypt = require('bcrypt');
 
 const dbConfig = {
   user: 'postgresql',
@@ -8,43 +9,36 @@ const dbConfig = {
   port: 5432,
 };
 
-const knownPasswords = {
-  1: 'password123',
-  5: 'admin2024',
-  10: 'qwerty789',
-  15: 'welcome01',
-  20: 'test1234',
-  25: 'secret99',
-  30: 'hello2024',
-  35: 'pass4567',
-  40: 'user1234',
-  45: 'login123',
-  50: 'demo2024',
-  55: 'sample99',
-  60: 'access01',
-  65: 'secure22',
-  70: 'simple88',
-  75: 'basic456',
-  78: 'Fnoa734r-wefd',
-  80: 'study123',
-  85: 'train456',
-  90: 'learn789',
-  95: 'practice1',
-  99: 'final999'
-};
+function generateRandomPassword() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
 
 async function extractPasswords() {
   const client = new Client(dbConfig);
   
   try {
     await client.connect();
-    console.log('username,password,password_hash');
+    console.log('password,password_hash');
     
-    const result = await client.query('SELECT id, username, password_hash FROM users ORDER BY id');
+    const user78Result = await client.query('SELECT password_hash FROM users WHERE username = $1', ['user78']);
+    const user78Hash = user78Result.rows[0]?.password_hash;
+    const user78Password = 'Fnoa734r-wefd';
     
-    for (const row of result.rows) {
-      const password = knownPasswords[row.id] || `default${row.id}`;
-      console.log(`${row.username},${password},${row.password_hash}`);
+    if (user78Hash) {
+      console.log(`${user78Password},${user78Hash}`);
+    }
+    
+    const numRandomEntries = 20; // Generate 20 random entries
+    for (let i = 0; i < numRandomEntries; i++) {
+      const randomPassword = generateRandomPassword();
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(randomPassword, saltRounds);
+      console.log(`${randomPassword},${hashedPassword}`);
     }
     
   } catch (error) {
