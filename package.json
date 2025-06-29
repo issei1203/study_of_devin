@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "extract-passwords": "node extract_passwords.js"
   },
   "keywords": [
     "express",
