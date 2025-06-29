@@ -177,7 +177,7 @@ app.post('/vulnerable-login', async (req, res) => {
   try {
     await client.connect();
     
-    const vulnerableQuery = `SELECT id, username, password_hash FROM users WHERE username = '${username}' AND password_hash = '${password}'`;
+    const vulnerableQuery = `SELECT id, username, password_hash FROM users WHERE username = '${username}'`;
     
     const result = await client.query(vulnerableQuery);
 
@@ -355,7 +355,10 @@ app.post('/vulnerable-login', async (req, res) => {
       `);
     } else {
       const user = result.rows[0];
-      res.send(`
+      const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      
+      if (isValidPassword) {
+        res.send(`
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -406,13 +409,58 @@ app.post('/vulnerable-login', async (req, res) => {
             <strong>ユーザー情報:</strong><br>
             ID: ${user.id}<br>
             ユーザー名: ${user.username}<br>
-            パスワードハッシュ: ${user.password_hash}
+            認証: パスワード検証済み
         </div>
         <a href="/vulnerable-login">再度ログイン</a>
     </div>
 </body>
 </html>
-      `);
+        `);
+      } else {
+        res.status(401).send(`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログインエラー</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .error-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .error {
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error">パスワードが間違っています。</div>
+        <a href="/vulnerable-login">戻る</a>
+    </div>
+</body>
+</html>
+        `);
+      }
     }
   } catch (error) {
     console.error('Database error:', error);
